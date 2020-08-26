@@ -1,7 +1,9 @@
 from datetime import datetime
+from typing import Union
 
 import requests
 from bs4 import BeautifulSoup
+from pydantic import BaseModel
 
 from app.entities import Ride
 
@@ -10,19 +12,27 @@ class LoginError(IOError):
     pass
 
 
+class Login(BaseModel):
+    username: str
+    password: str
+
+
+COOKIE_NAME = 'a3990c06031454fe8851126e4477ea83'
+
+
 class CitybikeAccount:
-    def __init__(self, username=None, password=None, session=None):
-        if username is not None and password is not None:
+    def __init__(self, login: Union[Login, str]):
+        if isinstance(login, Login):
             # start a request session to store the login cookie
-            self.login_data = {"username": username, "password": password}
+            self.login_data = {"username": login.username, "password": login.password}
             self.s = requests.Session()
             self.login()
-        elif session is not None:
+        elif isinstance(login, str):
             self.s = requests.Session()
             cookie_obj = requests.cookies.create_cookie(
                 domain='citybikewien.at',
-                name='a3990c06031454fe8851126e4477ea83',
-                value=session
+                name=COOKIE_NAME,
+                value=login
             )
             self.s.cookies.set_cookie(cookie_obj)
             self.check_login()
@@ -122,3 +132,6 @@ class CitybikeAccount:
                 yield r
             if count < 5:
                 break
+
+    def get_token(self):
+        return self.s.cookies[COOKIE_NAME]
