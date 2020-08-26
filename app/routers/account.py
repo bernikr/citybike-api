@@ -12,7 +12,7 @@ from app.security import get_account
 router = APIRouter()
 
 
-@router.get('/')
+@router.get('/rides')
 def hello_world(since: Optional[datetime] = None, acc: CitybikeAccount = Depends(get_account)):
     def generate():
         rides = acc.get_rides(yield_ride_count=True, since=since)

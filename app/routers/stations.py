@@ -8,7 +8,7 @@ from app.entities import Station, Location
 router = APIRouter()
 
 
-@router.get("/", response_model=List[Station])
+@router.get("", response_model=List[Station])
 def get_all_stations():
     return stationAPI.get_all_stations()
 
