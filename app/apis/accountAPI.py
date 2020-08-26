@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from typing import Union, Optional
+from typing import Union, Optional, List
 
 import requests
 from bs4 import BeautifulSoup
@@ -41,6 +41,11 @@ class UserInfo(BaseModel):
     zip: str
     place: str
     country: str
+
+
+class UphillChallenge(BaseModel):
+    id: int
+    description: str
 
 
 class CitybikeAccount:
@@ -183,3 +188,11 @@ class CitybikeAccount:
         i['country'] = d['Land']
         i['username'] = d['Benutzername']
         return UserInfo.parse_obj(i)
+
+    def get_uphill_challenges(self):
+        page = self.s.get("https://citybikewien.at/de/uphillteam/144-verfuegbare-herausforderungen?all=1")
+        soup = BeautifulSoup(page.content, 'html.parser')
+        for item in soup.select(".panel-heading"):
+            id = int(item.find("a").attrs['href'].split("/")[-1:][0])
+            description = item.contents[0].strip()[:-2]
+            yield UphillChallenge(id=id, description=description)

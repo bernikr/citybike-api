@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from starlette.responses import StreamingResponse
 
 from app import security
-from app.apis.accountAPI import CitybikeAccount, Login, UserInfo, Ride
+from app.apis.accountAPI import CitybikeAccount, Login, UserInfo, Ride, UphillChallenge
 from app.security import get_account
 from app.service.account import get_rides_since
 
@@ -37,3 +37,8 @@ def api_get_rides(since: Optional[datetime] = None, acc: CitybikeAccount = Depen
         yield ']'
 
     return StreamingResponse(generate(), media_type="application/json")
+
+
+@router.get("/uphillchallenges", response_model=List[UphillChallenge])
+def get_uphill_challenges(acc: CitybikeAccount = Depends(get_account)):
+    return acc.get_uphill_challenges()
