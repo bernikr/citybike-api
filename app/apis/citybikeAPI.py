@@ -3,6 +3,8 @@ from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
 
+from app.entities import Ride
+
 
 class LoginError(IOError):
     pass
@@ -91,7 +93,7 @@ class CitybikeAccount:
             end_time = datetime.strptime(r[4], '%d.%m.%Y %H:%M')
 
             if end_time > since:
-                yield dict(date=datetime.strptime(r[0], '%d.%m.%Y').date(),
+                yield Ride(date=datetime.strptime(r[0], '%d.%m.%Y').date(),
                            start_station_name=r[1],
                            start_time=datetime.strptime(r[2], '%d.%m.%Y %H:%M'),
                            end_station_name=r[3],

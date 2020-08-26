@@ -1,3 +1,5 @@
+from datetime import datetime, date
+
 from geopy import distance
 from pydantic import BaseModel
 
@@ -21,3 +23,13 @@ class StationInfo(BaseModel):
 class StationDistanceInfo(BaseModel):
     station: StationInfo
     distance: float
+
+
+class Ride(BaseModel):
+    date: date
+    start_station_name: str
+    start_time: datetime
+    end_station_name: str
+    end_time: datetime
+    price: float
+    elevation: int
