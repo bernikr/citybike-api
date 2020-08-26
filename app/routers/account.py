@@ -17,6 +17,11 @@ def get_token(login: Login):
     return security.get_token(login)
 
 
+@router.get("/userinfo", response_model=UserInfo)
+def get_userinfo(acc: CitybikeAccount = Depends(get_account)):
+    return acc.get_user_info()
+
+
 @router.get("/rides", response_model=List[Ride])
 def api_get_rides(since: Optional[datetime] = None, acc: CitybikeAccount = Depends(get_account)):
     def generate():
@@ -32,8 +37,3 @@ def api_get_rides(since: Optional[datetime] = None, acc: CitybikeAccount = Depen
         yield ']'
 
     return StreamingResponse(generate(), media_type="application/json")
-
-
-@router.get("/userinfo", response_model=UserInfo)
-def get_userinfo(acc: CitybikeAccount = Depends(get_account)):
-    return acc.get_user_info()
