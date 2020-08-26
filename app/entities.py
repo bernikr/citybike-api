@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from typing import Optional
 
 from geopy import distance
 from pydantic import BaseModel
@@ -32,4 +33,4 @@ class Ride(BaseModel):
     end_station_name: str
     end_time: datetime
     price: float
-    elevation: int
+    elevation: Optional[int]

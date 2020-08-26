@@ -1,7 +1,7 @@
 from fastapi import Security, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from app.apis.citybikeAPI import CitybikeAccount, LoginError, Login
+from app.apis.accountAPI import CitybikeAccount, LoginError, Login
 
 login_bearer = HTTPBearer()
 

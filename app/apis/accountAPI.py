@@ -88,7 +88,7 @@ class CitybikeAccount:
         tab = soup.select('#content div + p')[0]
         return int(tab.get_text().split(' ')[2])
 
-    def load_rides_page(self, starting_id, since=datetime.min):
+    def load_rides_page(self, starting_id):
         data_url = "https://www.citybikewien.at/de/meine-fahrten?start=" + str(starting_id)
         page = self.s.get(data_url)
         soup = BeautifulSoup(page.content, 'html.parser')
@@ -110,29 +110,26 @@ class CitybikeAccount:
 
             # Cutoff the Euro-sign from the price and the 'm' from the elevation
             r[5] = r[5][2:]
-            r[6] = r[6][:-2]
+            if len(r) > 6:
+                elevation = int(r[6][:-2])
+            else:
+                elevation = None
 
             # remove newlines
             r = [t.replace('\n', ' ').strip() for t in r]
 
             end_time = datetime.strptime(r[4], '%d.%m.%Y %H:%M')
 
-            if end_time > since:
-                yield Ride(date=datetime.strptime(r[0], '%d.%m.%Y').date(),
-                           start_station_name=r[1],
-                           start_time=datetime.strptime(r[2], '%d.%m.%Y %H:%M'),
-                           end_station_name=r[3],
-                           end_time=end_time,
-                           price=float(r[5].replace(',', '.')),
-                           elevation=int(r[6])
-                           )
-            else:
-                break
+            yield Ride(date=datetime.strptime(r[0], '%d.%m.%Y').date(),
+                       start_station_name=r[1],
+                       start_time=datetime.strptime(r[2], '%d.%m.%Y %H:%M'),
+                       end_station_name=r[3],
+                       end_time=end_time,
+                       price=float(r[5].replace(',', '.')),
+                       elevation=elevation
+                       )
 
-    def get_rides(self, since=None, yield_ride_count=False):
-        if since is None:
-            since = datetime.min
-
+    def get_rides(self, yield_ride_count=False):
         ride_count = self.get_ride_count()
 
         if yield_ride_count:
@@ -142,7 +139,7 @@ class CitybikeAccount:
         for i in range(0, ride_count, 5):
             # read the rows
             count = 0
-            for r in self.load_rides_page(i, since=since):
+            for r in self.load_rides_page(i):
                 count += 1
                 yield r
             if count < 5:

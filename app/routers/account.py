@@ -6,9 +6,10 @@ from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
 from app import security
-from app.apis.citybikeAPI import CitybikeAccount, Login, UserInfo
+from app.apis.accountAPI import CitybikeAccount, Login, UserInfo
 from app.entities import Ride
 from app.security import get_account
+from app.service.account import get_rides_since
 
 router = APIRouter()
 
@@ -19,9 +20,9 @@ def get_token(login: Login):
 
 
 @router.get("/rides", response_model=List[Ride])
-def get_rides(since: Optional[datetime] = None, acc: CitybikeAccount = Depends(get_account)):
+def api_get_rides(since: Optional[datetime] = None, acc: CitybikeAccount = Depends(get_account)):
     def generate():
-        rides = acc.get_rides(since=since)
+        rides = get_rides_since(acc, since=since)
 
         yield '['
         first = True
