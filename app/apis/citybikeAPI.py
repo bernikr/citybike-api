@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Union
 
 import requests
@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 from pydantic import BaseModel
 
 from app.entities import Ride
+
+COOKIE_NAME = 'a3990c06031454fe8851126e4477ea83'
 
 
 class LoginError(IOError):
@@ -17,7 +19,20 @@ class Login(BaseModel):
     password: str
 
 
-COOKIE_NAME = 'a3990c06031454fe8851126e4477ea83'
+class UserInfo(BaseModel):
+    username: str
+    name: str
+    rides_this_year: int
+    time_this_year: str
+    last_ride_date: date
+    credit: float
+    email: str
+    tel: str
+    birthday: date
+    address: str
+    zip: str
+    place: str
+    country: str
 
 
 class CitybikeAccount:
@@ -73,7 +88,7 @@ class CitybikeAccount:
         tab = soup.select('#content div + p')[0]
         return int(tab.get_text().split(' ')[2])
 
-    def load_page(self, starting_id, since=datetime.min):
+    def load_rides_page(self, starting_id, since=datetime.min):
         data_url = "https://www.citybikewien.at/de/meine-fahrten?start=" + str(starting_id)
         page = self.s.get(data_url)
         soup = BeautifulSoup(page.content, 'html.parser')
@@ -127,7 +142,7 @@ class CitybikeAccount:
         for i in range(0, ride_count, 5):
             # read the rows
             count = 0
-            for r in self.load_page(i, since=since):
+            for r in self.load_rides_page(i, since=since):
                 count += 1
                 yield r
             if count < 5:
@@ -135,3 +150,31 @@ class CitybikeAccount:
 
     def get_token(self):
         return self.s.cookies[COOKIE_NAME]
+
+    def get_user_info(self):
+        i = {}
+        page = self.s.get("https://citybikewien.at/de/meine-daten")
+        soup = BeautifulSoup(page.content, 'html.parser')
+        i['name'] = soup.select(".user-name-data")[0].text[:-1]
+        stats = soup.select(".user-stats-data")
+        i['rides_this_year'] = int(stats[0].text)
+        i['time_this_year'] = stats[1].text
+        i['last_ride_date'] = datetime.strptime(stats[2].text, '%d.%m.%Y').date()
+        i['credit'] = float(stats[3].text.replace(',', '.')[1:])
+
+        d = {}
+        for entry in soup.select(".data-list li"):
+            spans = entry.select("span")
+            if len(spans) == 2:
+                d[spans[0].text.strip()[:-1]] = spans[1].text.strip()
+
+        i['email'] = d['E-Mail']
+        i['tel'] = d['Telefon']
+        i['birthday'] = datetime.strptime(d['Geburtsdatum'], '%d.%m.%Y').date()
+        i['address'] = d['Adresse']
+        zip_and_place = d['Ort'].split(" ")
+        i['zip'] = zip_and_place[0]
+        i['place'] = " ".join(zip_and_place[1:])
+        i['country'] = d['Land']
+        i['username'] = d['Benutzername']
+        return UserInfo.parse_obj(i)
