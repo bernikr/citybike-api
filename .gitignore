@@ -1,13 +1,4 @@
 .idea/
 citybikes.iml
-
-*.csv
 *.pyc
-.Rhistory
-.RData
 
-config.json
-
-citybikes.db
-data.json
-logs/

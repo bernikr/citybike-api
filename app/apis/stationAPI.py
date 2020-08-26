@@ -5,7 +5,7 @@ from typing import Tuple, List, Optional
 import requests
 import xmltodict
 
-from app.service.entities import Station, Location
+from app.entities import Station, Location
 
 logger = logging.getLogger(__name__)
 

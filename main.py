@@ -5,12 +5,12 @@ from typing import Optional, List, Tuple
 
 import uvicorn as uvicorn
 from fastapi import FastAPI, HTTPException, Depends, Security
-from fastapi.security import HTTPBasic, HTTPBearer, HTTPBasicCredentials, HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.responses import StreamingResponse
 
 import app.apis.stationAPI as StationAPI
 from app.apis.citybikeAPI import CitybikeAccount, LoginError
-from app.service.entities import Station, Location
+from app.entities import Station, Location
 
 app = FastAPI()
 
