@@ -1,11 +1,9 @@
 from datetime import datetime, date
-from typing import Union
+from typing import Union, Optional
 
 import requests
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
-
-from app.entities import Ride
 
 COOKIE_NAME = 'a3990c06031454fe8851126e4477ea83'
 
@@ -17,6 +15,16 @@ class LoginError(IOError):
 class Login(BaseModel):
     username: str
     password: str
+
+
+class Ride(BaseModel):
+    date: date
+    start_station_name: str
+    start_time: datetime
+    end_station_name: str
+    end_time: datetime
+    price: float
+    elevation: Optional[int]
 
 
 class UserInfo(BaseModel):

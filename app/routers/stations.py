@@ -3,7 +3,8 @@ from typing import List, Optional, Tuple
 from fastapi import APIRouter, HTTPException
 
 from app.apis import stationAPI
-from app.entities import StationInfo, Location, StationDistanceInfo
+from app.entities import Location
+from app.apis.stationAPI import StationInfo, StationDistanceInfo
 
 router = APIRouter()
 

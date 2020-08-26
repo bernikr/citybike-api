@@ -2,12 +2,10 @@ from datetime import datetime
 from typing import Optional, List
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
 from app import security
-from app.apis.accountAPI import CitybikeAccount, Login, UserInfo
-from app.entities import Ride
+from app.apis.accountAPI import CitybikeAccount, Login, UserInfo, Ride
 from app.security import get_account
 from app.service.account import get_rides_since
 

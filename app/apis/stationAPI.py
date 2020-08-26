@@ -1,17 +1,31 @@
 import datetime
 import logging
-from typing import Tuple, List, Optional
+from typing import List, Optional
 
 import requests
 import xmltodict
+from pydantic import BaseModel
 
-from app.entities import StationInfo, Location, StationDistanceInfo
+from app.entities import Location
 
 logger = logging.getLogger(__name__)
 
 station_cache = []
 last_cached = datetime.datetime.min
 cache_time = datetime.timedelta(seconds=10)
+
+
+class StationInfo(BaseModel):
+    id: int
+    name: str
+    free_boxes: int
+    free_bikes: int
+    loc: Location
+
+
+class StationDistanceInfo(BaseModel):
+    station: StationInfo
+    distance: float
 
 
 def station_dict_to_model(s: dict) -> StationInfo:
