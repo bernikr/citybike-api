@@ -9,14 +9,26 @@ class LoginError(IOError):
 
 
 class CitybikeAccount:
-    def __init__(self, user):
-        # start a request session to store the login cookie
-        self.user = user
-        self.s = requests.Session()
-        self.login()
+    def __init__(self, username=None, password=None, session=None):
+        if username is not None and password is not None:
+            # start a request session to store the login cookie
+            self.login_data = {"username": username, "password": password}
+            self.s = requests.Session()
+            self.login()
+        elif session is not None:
+            self.s = requests.Session()
+            cookie_obj = requests.cookies.create_cookie(
+                domain='citybikewien.at',
+                name='a3990c06031454fe8851126e4477ea83',
+                value=session
+            )
+            self.s.cookies.set_cookie(cookie_obj)
+            self.check_login()
+        else:
+            raise LoginError
 
     def login(self):
-        login_data = {"username": self.user['username'], "password": self.user['password']}
+        login_data = self.login_data.copy()
         # get the hidden login fields needed to login
         frontpage = self.s.get("https://www.citybikewien.at/de")
         fp = BeautifulSoup(frontpage.content, 'html.parser')
@@ -32,7 +44,15 @@ class CitybikeAccount:
         user_name = soup.select(".user-name-data")
         if len(user_name) < 1:
             raise LoginError()
-        self.user['name'] = user_name[0].text[:-1]
+
+    def check_login(self):
+        # check login to the site and save the cookie to the session
+        login_url = "https://citybikewien.at/de/uebersicht"
+        logedin = self.s.get(login_url)
+        soup = BeautifulSoup(logedin.content, 'html.parser')
+        user_name = soup.select(".user-name-data")
+        if len(user_name) < 1:
+            raise LoginError()
 
     def get_ride_count(self):
         # get the number of existing rows from the website

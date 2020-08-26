@@ -4,7 +4,8 @@ from json import JSONEncoder
 from typing import Optional, List, Tuple
 
 import uvicorn as uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Security
+from fastapi.security import HTTPBasic, HTTPBearer, HTTPBasicCredentials, HTTPAuthorizationCredentials
 from starlette.responses import StreamingResponse
 
 import app.apis.stationAPI as StationAPI
@@ -12,6 +13,16 @@ from app.apis.citybikeAPI import CitybikeAccount, LoginError
 from app.service.entities import Station, Location
 
 app = FastAPI()
+
+
+login_bearer = HTTPBearer()
+
+
+async def get_account(login_bearer: HTTPAuthorizationCredentials = Security(login_bearer)):
+    try:
+        return CitybikeAccount(session=login_bearer.credentials)
+    except LoginError:
+        raise HTTPException(status_code=401, detail="Login invalid")
 
 
 @app.get("/stations", response_model=List[Station])
@@ -32,20 +43,12 @@ def get_nearest_station(loc: Location, limit: Optional[int] = None):
     return StationAPI.get_nearest_stations(loc, limit)
 
 
-@app.post('/rides')
-def hello_world(username: str, password: str, since: Optional[datetime] = None):
-    try:
-        acc = CitybikeAccount({'username': username, 'password': password})
-    except LoginError:
-        raise HTTPException(status_code=401, detail="Login invalid")
-
+@app.get('/rides')
+def hello_world(since: Optional[datetime] = None, acc: CitybikeAccount = Depends(get_account)):
     def generate():
-        yield '{"success": true, '
-        yield '"user": ' + json.dumps(dict(username=acc.user['username'], name=acc.user['name'])) + ", "
-
         rides = acc.get_rides(yield_ride_count=True, since=since)
 
-        yield '"count": ' + str(next(rides)) + ", "
+        yield '{"count": ' + str(next(rides)) + ",\n"
 
         yield '"rides": [\n'
         first = True
@@ -55,6 +58,7 @@ def hello_world(username: str, password: str, since: Optional[datetime] = None):
             yield json.dumps(ride, cls=DateTimeEncoder)
             first = False
         yield '\n]}'
+
     return StreamingResponse(generate(), media_type="application/json")
 
 
