@@ -10,9 +10,14 @@ class Location(BaseModel):
         return distance.distance((self.lat, self.lon), (other_loc.lat, other_loc.lon)).meters
 
 
-class Station(BaseModel):
+class StationInfo(BaseModel):
     id: int
     name: str
     free_boxes: int
     free_bikes: int
     loc: Location
+
+
+class StationDistanceInfo(BaseModel):
+    station: StationInfo
+    distance: float

@@ -5,7 +5,7 @@ from typing import Tuple, List, Optional
 import requests
 import xmltodict
 
-from app.entities import Station, Location
+from app.entities import StationInfo, Location, StationDistanceInfo
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +14,8 @@ last_cached = datetime.datetime.min
 cache_time = datetime.timedelta(seconds=10)
 
 
-def station_dict_to_model(s: dict) -> Station:
-    return Station(
+def station_dict_to_model(s: dict) -> StationInfo:
+    return StationInfo(
         id=int(s['id']),
         name=s['name'],
         free_boxes=int(s['free_boxes']),
@@ -27,7 +27,7 @@ def station_dict_to_model(s: dict) -> Station:
     )
 
 
-def get_all_stations() -> List[Station]:
+def get_all_stations() -> List[StationInfo]:
     logger.info("get_all_stations")
     global station_cache, last_cached, cache_time
     if datetime.datetime.now() > last_cached + cache_time:
@@ -38,7 +38,7 @@ def get_all_stations() -> List[Station]:
     return station_cache
 
 
-def get_station_by_id(id: int) -> Optional[Station]:
+def get_station_by_id(id: int) -> Optional[StationInfo]:
     logger.info("get_station_by_id")
     station = [s for s in get_all_stations() if s.id == id]
     if len(station) == 1:
@@ -47,11 +47,11 @@ def get_station_by_id(id: int) -> Optional[Station]:
         return None
 
 
-def get_nearest_stations(loc: Location, n: int = None) -> List[Tuple[Station, int]]:
+def get_nearest_stations(loc: Location, n: int = None) -> List[StationDistanceInfo]:
     logger.info("get_nearest_stations")
     stations = get_all_stations()
-    station_distance_pairs = [(s, s.loc.distance(loc)) for s in stations]
-    station_distance_pairs = sorted(station_distance_pairs, key=lambda x: x[1])
+    station_distance_infos = [StationDistanceInfo(station=s, distance=s.loc.distance(loc)) for s in stations]
+    station_distance_infos = sorted(station_distance_infos, key=lambda x: x.distance)
     if n is not None:
-        station_distance_pairs = station_distance_pairs[:n]
-    return station_distance_pairs
+        station_distance_infos = station_distance_infos[:n]
+    return station_distance_infos
