@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from starlette.responses import RedirectResponse
 
 from app.readme_generator import get_description
-from app.routers import account, stations
+from app.routers import account, stations, stats
 
 app = FastAPI(
     title="Inofficial Citybike Vienna API",
@@ -11,6 +11,7 @@ app = FastAPI(
 )
 
 app.include_router(stations.router, prefix="/stations", tags=["Stations"])
+app.include_router(stats.router, prefix="/stats", tags=["Statistics"])
 app.include_router(account.router, prefix="/account", tags=["Account"])
 
 
