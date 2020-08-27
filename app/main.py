@@ -7,7 +7,7 @@ from app.routers import account, stations, stats
 app = FastAPI(
     title="Inofficial Citybike Vienna API",
     description=get_description(),
-    version="0.2.0",
+    version="0.3.0",
 )
 
 app.include_router(stations.router, prefix="/stations", tags=["Stations"])
