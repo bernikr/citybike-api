@@ -6,5 +6,5 @@ router = APIRouter()
 
 
 @router.get("", response_model=GlobalStats)
-def api_get_global_stats():
+def get_global_statistics():
     return get_global_stats()

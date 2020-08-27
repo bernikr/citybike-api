@@ -23,7 +23,7 @@ def get_userinfo(acc: CitybikeAccount = Depends(get_account)):
 
 
 @router.get("/rides", response_model=List[Ride])
-def api_get_rides(since: Optional[datetime] = None, acc: CitybikeAccount = Depends(get_account)):
+def get_all_rides(since: Optional[datetime] = None, acc: CitybikeAccount = Depends(get_account)):
     def generate():
         rides = get_rides_since(acc, since=since)
 
@@ -40,7 +40,7 @@ def api_get_rides(since: Optional[datetime] = None, acc: CitybikeAccount = Depen
 
 
 @router.get("/uphillchallenges", response_model=List[UphillChallenge])
-def get_uphill_challenges(acc: CitybikeAccount = Depends(get_account)):
+def get_available_uphill_challenges(acc: CitybikeAccount = Depends(get_account)):
     return acc.get_uphill_challenges()
 
 

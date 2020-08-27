@@ -15,7 +15,7 @@ def get_all_stations():
 
 
 @router.get("/{station_id}", response_model=StationInfo)
-def read_item(station_id: int):
+def get_station_by_id(station_id: int):
     station = stationAPI.get_station_by_id(station_id)
     if station is None:
         raise HTTPException(status_code=404, detail="Station not found")
