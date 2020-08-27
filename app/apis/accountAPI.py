@@ -48,6 +48,13 @@ class UphillChallenge(BaseModel):
     description: str
 
 
+class CurrentUphillChallenge(BaseModel):
+    description: str
+    progress_raw: str
+    until_raw: str
+    details: str
+
+
 class CitybikeAccount:
     def __init__(self, login: Union[Login, str]):
         if isinstance(login, Login):
@@ -196,3 +203,50 @@ class CitybikeAccount:
             id = int(item.find("a").attrs['href'].split("/")[-1:][0])
             description = item.contents[0].strip()[:-2]
             yield UphillChallenge(id=id, description=description)
+
+    def get_uphill_challenge_detail(self, challenge_id) -> Optional[str]:
+        page = self.s.get("https://citybikewien.at/de/uphillteam/145-herausforderung-details/{}".format(challenge_id))
+        soup = BeautifulSoup(page.content, 'html.parser')
+        a = soup.select(".uphillteam-embedded-article")
+        if len(a) == 0:
+            return None
+        else:
+            return a[0].renderContents().strip()
+
+    def accept_uphill_challenge(self, challenge_id):
+        page = self.s.get("https://citybikewien.at/de/uphillteam/145-herausforderung-details/{}".format(challenge_id))
+        soup = BeautifulSoup(page.content, 'html.parser')
+        form = soup.select("form[action='/de/uphillteam']")[0]
+        form_data = {}
+        hidden_inputs = form.find_all('input', type='hidden')
+        for i in hidden_inputs:
+            form_data[i['name']] = i['value']
+        self.s.post("https://citybikewien.at/de/uphillteam", data=form_data)
+
+    def get_current_uphill_challenge(self):
+        page = self.s.get("https://citybikewien.at/de/uphillteam/151-herausforderung-fortschritt")
+        soup = BeautifulSoup(page.content, 'html.parser')
+        res = {}
+        content = soup.find("h2").parent.select("p")
+        heading = content[0].find("span")
+        if heading is None:
+            return None
+        id = int(heading.find("a").attrs['href'].split("/")[-1:][0])
+        res['description'] = heading.contents[0].strip()[:-2]
+        body = content[1].text.split(". ")
+        res['progress_raw'] = body[0]
+        res['until_raw'] = body[1]
+        page = self.s.get("https://citybikewien.at/de/uphillteam/155-aktive-teilnahme-details/{}".format(id))
+        soup = BeautifulSoup(page.content, 'html.parser')
+        res['details'] = soup.select(".uphillteam-embedded-article")[0].renderContents().strip()
+        return CurrentUphillChallenge.parse_obj(res)
+
+    def cancel_current_uphill_challenge(self):
+        page = self.s.get("https://citybikewien.at/de/uphillteam/146-herausforderung-abmeldung")
+        soup = BeautifulSoup(page.content, 'html.parser')
+        form = soup.select("form[action='/de/uphillteam']")[0]
+        form_data = {}
+        hidden_inputs = form.find_all('input', type='hidden')
+        for i in hidden_inputs:
+            form_data[i['name']] = i['value']
+        self.s.post("https://citybikewien.at/de/uphillteam", data=form_data)
