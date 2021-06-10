@@ -1,5 +1,5 @@
 starlette==0.13.6
-pydantic==1.6.1
+pydantic==1.6.2
 fastapi==0.65.2
 uvicorn==0.11.8
 beautifulsoup4==4.9.0
