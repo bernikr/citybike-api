@@ -1,5 +1,7 @@
 # Inofficial Citybike Vienna API
 
+**This project is deprecated as citybike vienna stopped operations**
+
 This projects provides an inofficial API to interact with the Citybike System in Vienna.
 
 Check out the docs at: <https://citybike-api.herokuapp.com/docs>
